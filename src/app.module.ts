@@ -8,9 +8,11 @@ import { AuthModule } from './auth/auth.module';
 import { User } from './user/entities/user.entity';
 import { Chat } from './chat/entities/chat.entity';
 import { Message } from './chat/entities/message.entity';
+import { UserModule } from './user/user.module';
 
 @Module({
   imports: [
+    AuthModule,
     ConfigModule.forRoot({ envFilePath: '.env' }),
     TypeOrmModule.forRoot({
       type: 'postgres',
@@ -22,7 +24,7 @@ import { Message } from './chat/entities/message.entity';
       entities: [User, Chat, Message],
       synchronize: true,
     }),
-    AuthModule,
+    UserModule,
   ],
 
   controllers: [AppController],
