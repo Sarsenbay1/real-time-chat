@@ -1,0 +1,38 @@
+version: '3.8'
+
+services:
+  app:
+    container_name: app
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - 7000:7000
+    volumes:
+      - .:/usr/app # named volume
+      - /usr/app/node_modules # anonymous volume for node_modules only
+    depends_on:
+      - postgres_db
+
+  postgres_db:
+    image: postgres:16.0-alpine3.18
+    container_name: postgres_db
+    environment:
+      - POSTGRES_DB=${POSTGRES_DB}
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - 5432:5432
+
+  pgadmin:
+    container_name: pgadmin
+    image: dpage/pgadmin4
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@admin.com
+      PGADMIN_DEFAULT_PASSWORD: admin
+    ports:
+      - '5050:80'
+volumes:
+  postgres_data:
