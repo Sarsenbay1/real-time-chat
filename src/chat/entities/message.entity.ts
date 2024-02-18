@@ -10,8 +10,8 @@ export class Message {
   @Column()
   text: string;
 
-  @Column()
-  time: Date;
+  @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
+  date_sending: Date;
 
   @ManyToOne(() => User, (user) => user.messages)
   user: User;

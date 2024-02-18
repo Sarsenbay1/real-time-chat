@@ -5,10 +5,7 @@ import { AuthService } from './auth.service';
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
   @Post()
-  signIn(
-    @Body()
-    signInDto: Record<string, any>,
-  ) {
+  signIn(@Body() signInDto: Record<string, any>) {
     return this.authService.signIn(signInDto.username, signInDto.password);
   }
 }

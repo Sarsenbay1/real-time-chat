@@ -9,6 +9,7 @@ import { User } from './user/entities/user.entity';
 import { Chat } from './chat/entities/chat.entity';
 import { Message } from './chat/entities/message.entity';
 import { UserModule } from './user/user.module';
+import { ChatModule } from './chat/chat.module';
 
 @Module({
   imports: [
@@ -25,6 +26,7 @@ import { UserModule } from './user/user.module';
       synchronize: true,
     }),
     UserModule,
+    ChatModule,
   ],
 
   controllers: [AppController],
