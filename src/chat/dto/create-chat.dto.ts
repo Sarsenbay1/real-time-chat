@@ -1,11 +1,4 @@
-import {
-  IsArray,
-  IsNumber,
-  IsString,
-  MinLength,
-  isArray,
-  isNumber,
-} from 'class-validator';
+import { IsArray, IsString, MinLength } from 'class-validator';
 
 export class CreateChatDto {
   @MinLength(1)
@@ -13,6 +6,5 @@ export class CreateChatDto {
   name: string;
 
   @IsArray()
-  @MinLength(2)
   usersId: number[];
 }

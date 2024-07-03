@@ -14,6 +14,9 @@ export class Chat {
   id: number;
 
   @Column()
+  createrId: number;
+
+  @Column()
   name: string;
 
   @ManyToMany(() => User, (user) => user.chats)

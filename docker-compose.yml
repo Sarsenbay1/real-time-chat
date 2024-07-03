@@ -1,19 +1,10 @@
 version: '3.8'
 
-services:
-  app:
-    container_name: app
-    build:
-      context: .
-      dockerfile: Dockerfile
-    ports:
-      - 7000:7000
-    volumes:
-      - .:/usr/app # named volume
-      - /usr/app/node_modules # anonymous volume for node_modules only
-    depends_on:
-      - postgres_db
+networks:
+  real-time-chat:
+    name: real-time-chat
 
+services:
   postgres_db:
     image: postgres:16.0-alpine3.18
     container_name: postgres_db
@@ -24,7 +15,7 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
     ports:
-      - 5432:5432
+      - ${POSTGRES_PORT}:5432
 
   pgadmin:
     container_name: pgadmin

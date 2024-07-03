@@ -1,37 +1,67 @@
 import { Module } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
-import { ConfigModule } from '@nestjs/config';
+import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { DataSource } from 'typeorm';
 import { AuthModule } from './auth/auth.module';
 import { User } from './user/entities/user.entity';
 import { Chat } from './chat/entities/chat.entity';
 import { Message } from './chat/entities/message.entity';
 import { UserModule } from './user/user.module';
 import { ChatModule } from './chat/chat.module';
+import { SocketGateway } from './socket/socket.gateway';
+import { plainToInstance } from 'class-transformer';
+import { EnvironmentVariables } from './environment-variables';
+import { validateSync } from 'class-validator';
 
 @Module({
   imports: [
+    ChatModule,
     AuthModule,
-    ConfigModule.forRoot({ envFilePath: '.env' }),
-    TypeOrmModule.forRoot({
-      type: 'postgres',
-      host: process.env.POSTGRES_HOST,
-      port: Number(process.env.POSTGRES_PORT),
-      username: process.env.POSTGRES_USER,
-      database: process.env.POSTGRES_DB,
-      password: process.env.POSTGRES_PASSWORD,
-      entities: [User, Chat, Message],
-      synchronize: true,
+    ConfigModule.forRoot({
+      envFilePath: '.env',
+      isGlobal: true,
+      validate: (rawConfig) => {
+        const config = plainToInstance(EnvironmentVariables, rawConfig, {
+          enableImplicitConversion: true,
+        });
+
+        const errors = validateSync(config);
+        if (errors.length > 0) {
+          throw new Error(errors.toString());
+        }
+        return config;
+      },
+    }),
+    TypeOrmModule.forRootAsync({
+      imports: [ConfigModule],
+      useFactory: async (
+        configService: ConfigService<EnvironmentVariables, true>,
+      ) => ({
+        type: 'postgres',
+        host: configService.get<string>('POSTGRES_HOST'),
+        port: configService.get<number>('POSTGRES_PORT'),
+        username: configService.get<string>('POSTGRES_USER'),
+        database: configService.get<string>('POSTGRES_DB'),
+        password: configService.get<string>('POSTGRES_PASSWORD'),
+        entities: [User, Chat, Message],
+        synchronize: true,
+      }),
+      inject: [ConfigService],
     }),
     UserModule,
     ChatModule,
   ],
 
   controllers: [AppController],
-  providers: [AppService],
+  providers: [AppService, SocketGateway],
 })
 export class AppModule {
-  constructor(private dataSource: DataSource) {}
+  constructor(
+    private configService: ConfigService<EnvironmentVariables, true>,
+  ) {
+    console.log(
+      `DB work to PORT ${configService.get<number>('POSTGRES_PORT')}`,
+    );
+  }
 }

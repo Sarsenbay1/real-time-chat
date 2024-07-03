@@ -20,12 +20,12 @@ export class UserService {
     return await this.userRepository.save(user);
   }
 
-  async findAll() {
+  async getAllUsers() {
     const user = await this.userRepository.find({ select: ['id', 'username'] });
     return user ? user : null;
   }
 
-  async findOneUser(id: number): Promise<User | undefined> {
+  async getUserById(id: number): Promise<User | undefined> {
     const user = await this.userRepository.findOneBy({ id: id });
     return user;
   }

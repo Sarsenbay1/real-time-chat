@@ -4,15 +4,14 @@ import {
   Post,
   Body,
   Patch,
-  Param,
   Delete,
   UseGuards,
-  Req,
 } from '@nestjs/common';
 import { UserService } from './user.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { AuthGuard } from 'src/auth/auth.guard';
+import { UserId } from 'src/common/get-user.decorator';
 
 @Controller('user')
 export class UserController {
@@ -23,25 +22,28 @@ export class UserController {
     return this.userService.createUser(createUserDto);
   }
 
+  @UseGuards(AuthGuard)
   @Get()
   findAll() {
-    return this.userService.findAll();
-  }
-
-  @Get(':id')
-  findOne(@Param('id') id: number) {
-    return this.userService.findOneUser(id);
+    return this.userService.getAllUsers();
   }
 
   @UseGuards(AuthGuard)
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateUserDto: UpdateUserDto) {
-    return this.userService.updateUser(+id, updateUserDto);
+  @Get('my-profile')
+  getUserById(@UserId() userId: number) {
+    console.log(userId, 'kkkkkkkkkkkkkkkk');
+    return this.userService.getUserById(userId);
   }
 
   @UseGuards(AuthGuard)
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.userService.removeUser(+id);
+  @Patch('my-profile')
+  update(@UserId() userId: number, @Body() updateUserDto: UpdateUserDto) {
+    return this.userService.updateUser(userId, updateUserDto);
+  }
+
+  @UseGuards(AuthGuard)
+  @Delete('my-profile')
+  remove(@UserId() userId: number) {
+    return this.userService.removeUser(userId);
   }
 }

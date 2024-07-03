@@ -8,7 +8,7 @@ export class Message {
   id: number;
 
   @Column()
-  text: string;
+  content: string;
 
   @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
   date_sending: Date;
