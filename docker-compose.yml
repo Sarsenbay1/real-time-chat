@@ -1,0 +1,37 @@
+version: '3.8'
+
+networks:
+  real-time-chat:
+    name: real-time-chat
+
+services:
+  postgres_db:
+    image: postgres:16.0-alpine3.18
+    container_name: postgres_db
+    environment:
+      - POSTGRES_DB=${POSTGRES_DB}
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - ${POSTGRES_PORT}:5432
+
+  pgadmin:
+    container_name: pgadmin
+    image: dpage/pgadmin4
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@admin.com
+      PGADMIN_DEFAULT_PASSWORD: admin
+    ports:
+      - '5050:80'
+
+  # redis:
+  # image: redis:6.2
+  # container_name: my_redis
+  # ports:
+  #   - '6379:6379'
+  # networks:
+  #   - 'real-time-chat'
+volumes:
+  postgres_data:
