@@ -26,8 +26,18 @@ To run this application locally, make sure you have Docker and Docker Compose in
    ```bash
    npm install
    ```
+   ```bash
+   yarn add
+   ```
 
 3. Start the application using Docker Compose:
    ```bash
    docker-compose up
+   ```
+4. Start API:
+   ```bash
+   npm run start:dev
+   ```
+   ```bash
+   yarn run start:dev
    ```
