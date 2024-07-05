@@ -9,7 +9,6 @@ import { Chat } from './chat/entities/chat.entity';
 import { Message } from './chat/entities/message.entity';
 import { UserModule } from './user/user.module';
 import { ChatModule } from './chat/chat.module';
-// import { SocketGateway } from './socket/socket.gateway';
 import { plainToInstance } from 'class-transformer';
 import { EnvironmentVariables } from './environment-variables';
 import { validateSync } from 'class-validator';
