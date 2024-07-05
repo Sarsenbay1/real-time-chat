@@ -13,11 +13,20 @@ import { ChatService } from './chat.service';
 import { CreateChatDto } from './dto/create-chat.dto';
 import { UserId } from 'src/common/get-user.decorator';
 import { UpdateChatDto } from './dto/update-chat.dto';
+import { ApiOkResponse } from '@nestjs/swagger';
+import { CreateChatRto } from './rto/create-chat.rto';
+import { ChatRto } from './rto/chat.rto';
+import { GetMessagesRto } from './rto/get-message.rto';
 
 @Controller('chats')
 export class ChatController {
   constructor(private readonly chatService: ChatService) {}
 
+  @ApiOkResponse({
+    description: 'Create Chat',
+    type: CreateChatRto,
+    isArray: false,
+  })
   @UseGuards(AuthGuard)
   @Post()
   createChat(@UserId() UserId: number, @Body() createChatDto: CreateChatDto) {
@@ -25,12 +34,22 @@ export class ChatController {
     return this.chatService.createChat(UserId, createChatDto);
   }
 
+  @ApiOkResponse({
+    description: 'Get Chats',
+    type: ChatRto,
+    isArray: true,
+  })
   @UseGuards(AuthGuard)
   @Get('my-chats')
   getAllChat(@UserId() id: number) {
     return this.chatService.getAllChat(id);
   }
 
+  @ApiOkResponse({
+    description: 'Get a message from a chat',
+    type: GetMessagesRto,
+    isArray: true,
+  })
   @UseGuards(AuthGuard)
   @Get('my-chats/:id')
   getChatMessage(@Param('id') chatId: number) {

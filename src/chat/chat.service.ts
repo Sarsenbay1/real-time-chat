@@ -64,7 +64,6 @@ export class ChatService {
       await this.chatRepository.save(chat);
     }
 
-    // console.log(chat.users, '___________________________/////////////S');
     console.log(user);
     console.log(updateChatDto);
     return chat;
@@ -84,29 +83,25 @@ export class ChatService {
   async createMessage(sendMessage: CreateMessageDto): Promise<Message> {
     const message = new Message();
     // const chat = await this.getOneChat(sendMessage.chatId);
+    try {
+    } catch (error) {}
     const chat = await this.chatRepository.findOne({
       where: { id: sendMessage.chatId },
       relations: ['users'],
     });
     const user = await this.userService.getUserById(sendMessage.userId);
 
-    // await console.log(
-    //   await chat.users.some((el) => el.id == user.id),
-    //   '1212121212',
-    // );
-    // if (!chat) {
-    //   throw new Error('Chat not found');
-    // }
+    if (!chat) {
+      throw new Error('Chat not found');
+    }
+    if (!user) {
+      throw new Error('User not found');
+    }
 
-    // if (!chat.users) {
-    //   throw new Error('Users not found in chat');
-    // }
-    // for (let index = 0; index < chat.users.length; index++) {
-    //   const element = chat.users[index];
-    //   console.log(element);
-    // }
-    // console.log(await chat, '--------------', user.id);
-    // console.log(chat.users.some(async (el) => el.id == user.id));
+    if (!chat.users) {
+      throw new Error('Users not found in chat');
+    }
+
     if (chat.users.some(async (el) => el.id == user.id)) {
       message.chat = chat;
       message.user = user;
@@ -127,7 +122,17 @@ export class ChatService {
       where: { id: chatId },
       relations: ['messages'],
     });
+    if (!chat) {
+      throw new Error('Chat not found');
+    }
+    const messages = await this.messageRepository.find({
+      where: { chat: chat },
+      relations: ['user'],
+    });
+    if (!messages) {
+      throw new Error('Messages not found');
+    }
 
-    return await this.messageRepository.findBy({ chat: chat });
+    return messages;
   }
 }
