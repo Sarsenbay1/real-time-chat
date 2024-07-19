@@ -1,4 +1,9 @@
-import { ForbiddenException, Injectable } from '@nestjs/common';
+import {
+  ForbiddenException,
+  Inject,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { CreateChatDto } from './dto/create-chat.dto';
 import { UpdateChatDto } from './dto/update-chat.dto';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -8,10 +13,12 @@ import { UserService } from 'src/user/user.service';
 import { User } from 'src/user/entities/user.entity';
 import { Message } from './entities/message.entity';
 import { CreateMessageDto } from './dto/create-message-dto';
+import { Redis } from 'ioredis';
 
 @Injectable()
 export class ChatService {
   constructor(
+    @Inject('REDIS_CLIENT') private readonly redis: Redis,
     private readonly userService: UserService,
     @InjectRepository(Chat)
     private readonly chatRepository: Repository<Chat>,
@@ -20,6 +27,8 @@ export class ChatService {
   ) {}
 
   async createChat(userId: number, createChatDto: CreateChatDto) {
+    createChatDto.usersId = [...new Set(createChatDto.usersId)];
+
     const { name, usersId } = createChatDto;
 
     const users = await Promise.all(
@@ -29,7 +38,7 @@ export class ChatService {
     );
 
     users.push(await this.userService.getUserById(userId));
-    console.log(users);
+
     const newChat = await this.chatRepository.create({
       createrId: userId,
       name: name,
@@ -39,21 +48,21 @@ export class ChatService {
   }
 
   async getAllChat(userId: number) {
-    // const user = this.userRepository.findOneBy({ id: id });
-    const chats = await this.chatRepository.find({
-      where: { users: { id: userId } },
-    });
-    return chats;
+    const user = this.userService.getUserById(userId);
+    return (await user).chats;
   }
 
   async getOneChat(id: number) {
     const chat = await this.chatRepository.findOneBy({ id: id });
+    if (!chat) {
+      throw new NotFoundException(`Chat with ID ${id} not found`);
+    }
     return chat;
   }
 
   async updateChat(id: number, updateChatDto: UpdateChatDto, userId: number) {
     const chat = await this.getOneChat(id);
-    const user = await this.userService.getUserById(userId);
+    // const user = await this.userService.getUserById(userId);
     const { name, usersId } = updateChatDto;
     if (chat.createrId === userId) {
       chat.name = name;
@@ -64,8 +73,6 @@ export class ChatService {
       await this.chatRepository.save(chat);
     }
 
-    console.log(user);
-    console.log(updateChatDto);
     return chat;
   }
 
@@ -108,16 +115,30 @@ export class ChatService {
       message.content = sendMessage.content;
       message.date_sending = new Date();
       // message_
+      const savedMessage = await this.messageRepository.save(message);
 
-      // console.logserId);
-      console.log(message);
-      return await this.messageRepository.save(message);
+      // Кэширование сообщения в Redis
+      await this.redis.lpush(
+        `chat:${chat.id}:messages`,
+        JSON.stringify(savedMessage),
+      );
+      return savedMessage;
     } else {
       throw new Error('User is not part of the chat');
     }
   }
 
   async getMessages(chatId: number): Promise<Message[]> {
+    const cacheKey = `chat:${chatId}:messages`;
+
+    // Попытка получить сообщения из кэша Redis
+    const cachedMessages = await this.redis.lrange(cacheKey, 0, -1);
+
+    // Если сообщения найдены в кэше, возвращаем их
+    if (cachedMessages.length > 0) {
+      return cachedMessages.map((message) => JSON.parse(message));
+    }
+
     const chat = await this.chatRepository.findOne({
       where: { id: chatId },
       relations: ['messages'],
@@ -132,6 +153,12 @@ export class ChatService {
     if (!messages) {
       throw new Error('Messages not found');
     }
+
+    await Promise.all(
+      messages.map((message) =>
+        this.redis.lpush(cacheKey, JSON.stringify(message)),
+      ),
+    );
 
     return messages;
   }

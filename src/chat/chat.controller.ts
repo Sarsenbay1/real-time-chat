@@ -30,7 +30,6 @@ export class ChatController {
   @UseGuards(AuthGuard)
   @Post()
   createChat(@UserId() UserId: number, @Body() createChatDto: CreateChatDto) {
-    console.log('doshlo controller');
     return this.chatService.createChat(UserId, createChatDto);
   }
 
@@ -71,16 +70,4 @@ export class ChatController {
   removeChat(@Param() id: number, @UserId() userId: number) {
     return this.chatService.removeChat(id, userId);
   }
-  //
-  // @Get('/chat')
-  // @Render('index')
-  // Home() {
-  //   return;
-  // }
-
-  // @Get('/api/chat')
-  // async Chat(@Res() res) {
-  //   const messages = await this.chatService.getMessages();
-  //   res.json(messages);
-  // }
 }

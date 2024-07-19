@@ -1,6 +1,4 @@
 import { Module } from '@nestjs/common';
-import { AppController } from './app.controller';
-import { AppService } from './app.service';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { AuthModule } from './auth/auth.module';
@@ -12,6 +10,7 @@ import { ChatModule } from './chat/chat.module';
 import { plainToInstance } from 'class-transformer';
 import { EnvironmentVariables } from './environment-variables';
 import { validateSync } from 'class-validator';
+import { RedisModule } from './redis/redis.module';
 
 @Module({
   imports: [
@@ -52,8 +51,8 @@ import { validateSync } from 'class-validator';
     ChatModule,
   ],
 
-  controllers: [AppController],
-  providers: [AppService],
+  // controllers: [AppController],
+  providers: [RedisModule],
 })
 export class AppModule {
   constructor(
