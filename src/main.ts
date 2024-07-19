@@ -23,8 +23,8 @@ async function bootstrap() {
   SwaggerModule.setup('api', app, document);
 
   app.enableCors({
-    origin: 'http://localhost:3000', // Укажите здесь домен вашего фронтенда
-    methods: ['GET', 'POST', 'PUT', 'DELETE'], // Укажите методы, которые разрешены
+    origin: 'http://localhost:3000', // домен фронтенда
+    methods: ['GET', 'POST', 'PUT', 'DELETE'], // методы, которые разрешены
     allowedHeaders: ['Content-Type', 'Authorization'], // Разрешенные заголовки
   });
 

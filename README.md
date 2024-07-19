@@ -1,12 +1,11 @@
 # Real-Time Chat Application with NestJS
 
 ![NestJS](https://nestjs.com/img/logo_text.svg)
+
 <p align="left">
 <a href="https://www.typescriptlang.org/" target="_blank" rel="noreferrer"><img src="https://raw.githubusercontent.com/danielcranney/readme-generator/main/public/icons/skills/typescript-colored.svg" width="36" height="36" alt="TypeScript" /></a><a  src="https://raw.githubusercontent.com/danielcranney/readme-generator/main/public/icons/skills/mongodb-colored.svg" width="36" height="36" alt="MongoDB" /></a><a href="https://www.postgresql.org/" target="_blank" rel="noreferrer"><img src="https://raw.githubusercontent.com/danielcranney/readme-generator/main/public/icons/skills/postgresql-colored.svg" width="36" height="36" alt="PostgreSQL" /></a><a href="https://www.docker.com/" target="_blank" rel="noreferrer"><img src="https://raw.githubusercontent.com/danielcranney/readme-generator/main/public/icons/skills/docker-colored.svg" width="36" height="36" alt="Docker" /></a>
 </p>
 This is a real-time chat application built with NestJS, utilizing WebSocket for instant messaging, Swagger for API documentation, and Docker for containerization with PostgreSQL.
-
-
 
 ## Features
 
@@ -30,6 +29,7 @@ To run this application locally, make sure you have Docker and Docker Compose in
    ```bash
    npm install
    ```
+
    ```bash
    yarn add
    ```
