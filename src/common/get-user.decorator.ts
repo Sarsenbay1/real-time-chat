@@ -6,8 +6,6 @@ import { EnvironmentVariables } from 'src/environment-variables';
 export const UserId = createParamDecorator(
   (data: unknown, ctx: ExecutionContext) => {
     const request = ctx.switchToHttp().getRequest();
-    // const configService =
-    // ctx.get<ConfigService<EnvironmentVariables>>('ConfigService');
 
     let configService: ConfigService<EnvironmentVariables, true>;
 
@@ -16,11 +14,7 @@ export const UserId = createParamDecorator(
     }
 
     const token = request.headers.authorization.replace('Bearer ', '');
-    const decoded: any = jwt.verify(
-      token,
-      process.env.JWT_SECRET,
-      // configService.get<string>('JWT_SECRET'),
-    );
+    const decoded: any = jwt.verify(token, process.env.JWT_SECRET);
     console.log(decoded);
     return decoded.sub;
   },

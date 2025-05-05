@@ -21,4 +21,19 @@ export class EnvironmentVariables {
 
   @IsString()
   JWT_SECRET: string;
+
+  @IsString()
+  MINIO_ENDPOINT: string;
+
+  @IsString()
+  MINIO_ACCESS_KEY: string;
+
+  @IsString()
+  MINIO_SECRET_KEY: string;
+
+  @IsString()
+  MINIO_BUCKET_NAME: string;
+
+  @IsString()
+  S3_REGION: string;
 }

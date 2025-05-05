@@ -9,5 +9,5 @@ export class CreateChatDto {
 
   @ApiProperty()
   @IsArray()
-  usersId: number[];
+  userIds: number[];
 }

@@ -5,6 +5,20 @@ networks:
     name: real-time-chat
 
 services:
+  s3:
+    image: minio/minio
+    container_name: minio
+    ports:
+      - '9000:9000'
+      - '9001:9001'
+    environment:
+      - MINIO_ROOT_USER=minioadmin
+      - MINIO_ROOT_PASSWORD=minioadmin
+    volumes:
+      - ./s3/data:/data
+      - ./s3/config:/root/.minio
+    command: server /data --console-address ":9001"
+
   postgres_db:
     image: postgres:16.0-alpine3.18
     container_name: postgres_db

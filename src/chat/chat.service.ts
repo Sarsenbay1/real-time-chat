@@ -27,12 +27,12 @@ export class ChatService {
   ) {}
 
   async createChat(userId: number, createChatDto: CreateChatDto) {
-    createChatDto.usersId = [...new Set(createChatDto.usersId)];
+    createChatDto.userIds = [...new Set(createChatDto.userIds)];
 
-    const { name, usersId } = createChatDto;
+    const { name, userIds } = createChatDto;
 
     const users = await Promise.all(
-      usersId.map(async (el: number | User) => {
+      userIds.map(async (el: number | User) => {
         return (el = await this.userService.getUserById(+el));
       }),
     );
@@ -63,11 +63,11 @@ export class ChatService {
   async updateChat(id: number, updateChatDto: UpdateChatDto, userId: number) {
     const chat = await this.getOneChat(id);
     // const user = await this.userService.getUserById(userId);
-    const { name, usersId } = updateChatDto;
+    const { name, userIds } = updateChatDto;
     if (chat.createrId === userId) {
       chat.name = name;
       chat.users = await Promise.all(
-        usersId.map(async (el) => await this.userService.getUserById(el)),
+        userIds.map(async (el) => await this.userService.getUserById(el)),
       );
       chat.users.push(await this.userService.getUserById(userId));
       await this.chatRepository.save(chat);
@@ -89,7 +89,6 @@ export class ChatService {
   //for message
   async createMessage(sendMessage: CreateMessageDto): Promise<Message> {
     const message = new Message();
-    // const chat = await this.getOneChat(sendMessage.chatId);
     try {
     } catch (error) {}
     const chat = await this.chatRepository.findOne({
@@ -114,7 +113,6 @@ export class ChatService {
       message.user = user;
       message.content = sendMessage.content;
       message.date_sending = new Date();
-      // message_
       const savedMessage = await this.messageRepository.save(message);
 
       // Кэширование сообщения в Redis
@@ -144,10 +142,10 @@ export class ChatService {
       relations: ['messages'],
     });
     if (!chat) {
-      throw new Error('Chat not found');
+      throw new NotFoundException('Chat not found');
     }
     const messages = await this.messageRepository.find({
-      where: { chat: chat },
+      where: { chat },
       relations: ['user'],
     });
     if (!messages) {

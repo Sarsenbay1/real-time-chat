@@ -11,6 +11,8 @@ import { plainToInstance } from 'class-transformer';
 import { EnvironmentVariables } from './environment-variables';
 import { validateSync } from 'class-validator';
 import { RedisModule } from './redis/redis.module';
+import { validate } from './common/validate';
+import { S3Module } from './s3/s3.module';
 
 @Module({
   imports: [
@@ -19,17 +21,7 @@ import { RedisModule } from './redis/redis.module';
     ConfigModule.forRoot({
       envFilePath: '.env',
       isGlobal: true,
-      validate: (rawConfig) => {
-        const config = plainToInstance(EnvironmentVariables, rawConfig, {
-          enableImplicitConversion: true,
-        });
-
-        const errors = validateSync(config);
-        if (errors.length > 0) {
-          throw new Error(errors.toString());
-        }
-        return config;
-      },
+      validate: validate, //there's differences
     }),
     TypeOrmModule.forRootAsync({
       imports: [ConfigModule],
@@ -49,9 +41,9 @@ import { RedisModule } from './redis/redis.module';
     }),
     UserModule,
     ChatModule,
+    S3Module,
   ],
 
-  // controllers: [AppController],
   providers: [RedisModule],
 })
 export class AppModule {
