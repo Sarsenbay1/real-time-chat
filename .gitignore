@@ -1,0 +1,7 @@
+.env
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+/app-server
