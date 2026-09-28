@@ -32,16 +32,15 @@ type UserResponse struct {
 	Username string `json:"username"`
 }
 
-type AuthResponse struct {
-	AccessToken string       `json:"access_token"`
-	User        UserResponse `json:"user"`
-}
-
 func (h *Handler) Register(w http.ResponseWriter, r *http.Request) {
 	var request RegisterRequest
 
 	if err := json.NewDecoder(r.Body).Decode(&request); err != nil {
-		http.Error(w, "invalid request body", http.StatusBadRequest)
+		http.Error(
+			w,
+			"invalid request body",
+			http.StatusBadRequest,
+		)
 		return
 	}
 
@@ -60,13 +59,12 @@ func (h *Handler) Register(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	response := AuthResponse{
-		AccessToken: result.Token,
-		User: UserResponse{
-			ID:       result.User.ID.String(),
-			Email:    result.User.Email,
-			Username: result.User.Username,
-		},
+	h.setAuthCookie(w, result.Token, 0)
+
+	response := UserResponse{
+		ID:       result.User.ID.String(),
+		Email:    result.User.Email,
+		Username: result.User.Username,
 	}
 
 	w.Header().Set("Content-Type", "application/json")
@@ -81,7 +79,11 @@ func (h *Handler) Login(w http.ResponseWriter, r *http.Request) {
 	var request LoginRequest
 
 	if err := json.NewDecoder(r.Body).Decode(&request); err != nil {
-		http.Error(w, "invalid request body", http.StatusBadRequest)
+		http.Error(
+			w,
+			"invalid request body",
+			http.StatusBadRequest,
+		)
 		return
 	}
 
@@ -99,13 +101,12 @@ func (h *Handler) Login(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	response := AuthResponse{
-		AccessToken: result.Token,
-		User: UserResponse{
-			ID:       result.User.ID.String(),
-			Email:    result.User.Email,
-			Username: result.User.Username,
-		},
+	h.setAuthCookie(w, result.Token, 0)
+
+	response := UserResponse{
+		ID:       result.User.ID.String(),
+		Email:    result.User.Email,
+		Username: result.User.Username,
 	}
 
 	w.Header().Set("Content-Type", "application/json")
@@ -114,4 +115,26 @@ func (h *Handler) Login(w http.ResponseWriter, r *http.Request) {
 	if err := json.NewEncoder(w).Encode(response); err != nil {
 		return
 	}
+}
+
+func (h *Handler) Logout(w http.ResponseWriter, r *http.Request) {
+	h.setAuthCookie(w, "", -1)
+
+	w.WriteHeader(http.StatusNoContent)
+}
+
+func (h *Handler) setAuthCookie(
+	w http.ResponseWriter,
+	token string,
+	maxAge int,
+) {
+	http.SetCookie(w, &http.Cookie{
+		Name:     h.authService.jwtManager.tokenKey,
+		Value:    token,
+		Path:     "/",
+		HttpOnly: true,
+		Secure:   false,
+		SameSite: http.SameSiteLaxMode,
+		MaxAge:   maxAge,
+	})
 }

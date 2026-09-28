@@ -4,11 +4,13 @@ import (
 	"context"
 	"errors"
 
+	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
 )
 
 type UserRepository interface {
 	FindByEmail(ctx context.Context, email string) (*User, error)
+	FindByID(ctx context.Context, id uuid.UUID) (*User, error)
 	Create(ctx context.Context, user *User) error
 }
 
@@ -33,6 +35,22 @@ var ErrUserNotFound = errors.New("user not found")
 
 func (s *Service) FindByEmail(ctx context.Context, email string) (*User, error) {
 	user, err := s.repo.FindByEmail(ctx, email)
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return nil, ErrUserNotFound
+		}
+
+		return nil, err
+	}
+
+	return user, nil
+}
+
+func (s *Service) FindByID(
+	ctx context.Context,
+	id uuid.UUID,
+) (*User, error) {
+	user, err := s.repo.FindByID(ctx, id)
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
 			return nil, ErrUserNotFound

@@ -14,8 +14,9 @@ import (
 )
 
 type JWTManager struct {
-	secret []byte
-	ttl    time.Duration
+	secret   []byte
+	ttl      time.Duration
+	tokenKey string
 }
 
 type Claims struct {
@@ -23,10 +24,11 @@ type Claims struct {
 	jwt.RegisteredClaims
 }
 
-func NewJWTManager(secret string, ttl time.Duration) *JWTManager {
+func NewJWTManager(secret string, ttl time.Duration, tokenKey string) *JWTManager {
 	return &JWTManager{
-		secret: []byte(secret),
-		ttl:    ttl,
+		secret:   []byte(secret),
+		ttl:      ttl,
+		tokenKey: tokenKey,
 	}
 }
 

@@ -67,9 +67,15 @@ func main() {
 		log.Fatalf("invalid JWT_EXPIRES_IN: %v", err)
 	}
 
+	jwtTokenKey := os.Getenv("JWT_TOKEN_KEY")
+	if jwtTokenKey == "" {
+		log.Fatal("JWT_TOKEN_KEY is required")
+	}
+
 	jwtManager := auth.NewJWTManager(
 		jwtSecret,
 		jwtTTL,
+		jwtTokenKey,
 	)
 
 	// Auth
@@ -86,11 +92,20 @@ func main() {
 	// HTTP
 
 	authHandler := auth.NewHandler(authService)
+	userHandler := user.NewHandler(userService)
 
 	mux := http.NewServeMux()
 
 	mux.HandleFunc("POST /auth/register", authHandler.Register)
 	mux.HandleFunc("POST /auth/login", authHandler.Login)
+	mux.HandleFunc("POST /auth/logout", authHandler.Logout)
+
+	mux.Handle(
+		"GET /users/me",
+		authService.RequireAuth(
+			http.HandlerFunc(userHandler.Me),
+		),
+	)
 
 	server := &http.Server{
 		Addr:    ":" + os.Getenv("PORT"),
