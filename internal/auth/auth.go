@@ -11,80 +11,7 @@ import (
 
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/google/uuid"
-	"github.com/redis/go-redis/v9"
 )
-
-type SessionStore interface {
-	Set(ctx context.Context, token string, userID uuid.UUID, ttl time.Duration) error
-	Get(ctx context.Context, token string) (uuid.UUID, error)
-	Delete(ctx context.Context, token string) error
-}
-
-var ErrSessionNotFound = errors.New("session not found")
-
-type RedisSessionStore struct {
-	client   *redis.Client
-	tokenKey string
-}
-
-func NewRedisSessionStore(client *redis.Client, tokenKey string) *RedisSessionStore {
-	return &RedisSessionStore{
-		client:   client,
-		tokenKey: tokenKey,
-	}
-}
-
-func (s *RedisSessionStore) key(token string) string {
-	return s.tokenKey + ":" + token
-}
-
-func (s *RedisSessionStore) Set(
-	ctx context.Context,
-	token string,
-	userID uuid.UUID,
-	ttl time.Duration,
-) error {
-	return s.client.Set(
-		ctx,
-		s.key(token),
-		userID.String(),
-		ttl,
-	).Err()
-}
-
-func (s *RedisSessionStore) Get(
-	ctx context.Context,
-	token string,
-) (uuid.UUID, error) {
-	value, err := s.client.Get(
-		ctx,
-		s.key(token),
-	).Result()
-	if err != nil {
-		if errors.Is(err, redis.Nil) {
-			return uuid.Nil, ErrSessionNotFound
-		}
-
-		return uuid.Nil, err
-	}
-
-	userID, err := uuid.Parse(value)
-	if err != nil {
-		return uuid.Nil, fmt.Errorf("parse session user id: %w", err)
-	}
-
-	return userID, nil
-}
-
-func (s *RedisSessionStore) Delete(
-	ctx context.Context,
-	token string,
-) error {
-	return s.client.Del(
-		ctx,
-		s.key(token),
-	).Err()
-}
 
 type JWTManager struct {
 	secret []byte
@@ -159,7 +86,6 @@ type AuthService struct {
 func NewService(
 	userService *user.Service,
 	passwordHasher *utils.PasswordHasher,
-	sessionStore SessionStore,
 	jwtManager *JWTManager,
 ) *AuthService {
 	return &AuthService{

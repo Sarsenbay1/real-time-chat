@@ -11,7 +11,6 @@ import (
 	"time"
 
 	"github.com/joho/godotenv"
-	"github.com/redis/go-redis/v9"
 
 	"real-time-chat/internal/app"
 	"real-time-chat/internal/auth"
@@ -35,29 +34,6 @@ func main() {
 	defer db.Close()
 
 	log.Println("database connected successfully")
-
-	// Redis
-
-	redisPort, err := strconv.Atoi(os.Getenv("REDIS_PORT"))
-	if err != nil {
-		log.Fatalf("invalid REDIS_PORT: %v", err)
-	}
-
-	redisClient := redis.NewClient(&redis.Options{
-		Addr: fmt.Sprintf(
-			"%s:%d",
-			os.Getenv("REDIS_HOST"),
-			redisPort,
-		),
-	})
-
-	defer redisClient.Close()
-
-	if err := redisClient.Ping(ctx).Err(); err != nil {
-		log.Fatalf("failed to connect to redis: %v", err)
-	}
-
-	log.Println("redis connected successfully")
 
 	// Password hashing
 
@@ -96,35 +72,26 @@ func main() {
 		jwtTTL,
 	)
 
-	// Session store
-
-	tokenKey := os.Getenv("JWT_TOKEN_KEY")
-	if tokenKey == "" {
-		log.Fatal("JWT_TOKEN_KEY is required")
-	}
-
-	sessionStore := auth.NewRedisSessionStore(
-		redisClient,
-		tokenKey,
-	)
-
 	// Auth
 
 	authService := auth.NewService(
 		userService,
 		passwordHasher,
-		sessionStore,
 		jwtManager,
 	)
 
 	log.Println("auth service initialized")
 	log.Printf("jwt ttl: %s", jwtTTL)
 
+	// HTTP
+
 	authHandler := auth.NewHandler(authService)
+
 	mux := http.NewServeMux()
 
 	mux.HandleFunc("POST /auth/register", authHandler.Register)
 	mux.HandleFunc("POST /auth/login", authHandler.Login)
+
 	server := &http.Server{
 		Addr:    ":" + os.Getenv("PORT"),
 		Handler: mux,
@@ -135,7 +102,6 @@ func main() {
 	if err := server.ListenAndServe(); err != nil {
 		log.Fatalf("server failed: %v", err)
 	}
-
 }
 
 func parseDuration(value string) (time.Duration, error) {
