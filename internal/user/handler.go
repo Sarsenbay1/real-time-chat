@@ -2,7 +2,10 @@ package user
 
 import (
 	"encoding/json"
+	"errors"
 	"net/http"
+
+	"github.com/google/uuid"
 )
 
 type Handler struct {
@@ -32,12 +35,33 @@ func (h *Handler) Me(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	h.getUser(w, r, userID)
+}
+
+func (h *Handler) GetUser(w http.ResponseWriter, r *http.Request) {
+	userID, err := uuid.Parse(r.PathValue("id"))
+	if err != nil {
+		http.Error(
+			w,
+			"invalid user id",
+			http.StatusBadRequest,
+		)
+		return
+	}
+
+	h.getUser(w, r, userID)
+}
+func (h *Handler) getUser(
+	w http.ResponseWriter,
+	r *http.Request,
+	userID uuid.UUID,
+) {
 	user, err := h.userService.FindByID(
 		r.Context(),
 		userID,
 	)
 	if err != nil {
-		if err == ErrUserNotFound {
+		if errors.Is(err, ErrUserNotFound) {
 			http.Error(
 				w,
 				"user not found",

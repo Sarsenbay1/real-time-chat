@@ -108,6 +108,13 @@ func main() {
 		),
 	)
 
+	mux.Handle(
+		"GET /users/{id}",
+		authService.RequireAuth(
+			http.HandlerFunc(userHandler.GetUser),
+		),
+	)
+
 	server := &http.Server{
 		Addr:    ":" + os.Getenv("PORT"),
 		Handler: mux,
