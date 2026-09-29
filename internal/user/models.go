@@ -15,3 +15,11 @@ type User struct {
 	CreatedAt    time.Time
 	UpdatedAt    time.Time
 }
+
+type UserListParams struct {
+	Page      int `validate:"min=1"`
+	Limit     int `validate:"min=1,max=100"`
+	Search    string
+	SortBy    string `validate:"oneof=username email created_at"`
+	SortOrder string `validate:"oneof=asc desc"`
+}

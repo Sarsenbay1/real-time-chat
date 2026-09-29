@@ -3,6 +3,7 @@ package user
 import (
 	"context"
 	"errors"
+	"fmt"
 
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
@@ -12,6 +13,7 @@ type UserRepository interface {
 	FindByEmail(ctx context.Context, email string) (*User, error)
 	FindByID(ctx context.Context, id uuid.UUID) (*User, error)
 	Create(ctx context.Context, user *User) error
+	FindAll(ctx context.Context, params UserListParams) ([]*User, int, error)
 }
 
 type PasswordHasher interface {
@@ -84,4 +86,12 @@ func (s *Service) Create(
 	}
 
 	return user, nil
+}
+
+func (s *Service) FindAll(
+	ctx context.Context,
+	params UserListParams,
+) ([]*User, int, error) {
+	fmt.Println(params)
+	return s.repo.FindAll(ctx, params)
 }

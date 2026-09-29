@@ -93,8 +93,10 @@ func main() {
 	// HTTP
 
 	authHandler := auth.NewHandler(authService, validator)
-	userHandler := user.NewHandler(userService)
-
+	userHandler := user.NewHandler(
+		userService,
+		validator,
+	)
 	mux := http.NewServeMux()
 
 	mux.HandleFunc("POST /auth/register", authHandler.Register)
@@ -112,6 +114,13 @@ func main() {
 		"GET /users/{id}",
 		authService.RequireAuth(
 			http.HandlerFunc(userHandler.GetUser),
+		),
+	)
+
+	mux.Handle(
+		"GET /users",
+		authService.RequireAuth(
+			http.HandlerFunc(userHandler.GetUsers),
 		),
 	)
 
