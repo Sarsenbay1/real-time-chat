@@ -85,13 +85,14 @@ func main() {
 		passwordHasher,
 		jwtManager,
 	)
+	validator := utils.NewValidator()
 
 	log.Println("auth service initialized")
 	log.Printf("jwt ttl: %s", jwtTTL)
 
 	// HTTP
 
-	authHandler := auth.NewHandler(authService)
+	authHandler := auth.NewHandler(authService, validator)
 	userHandler := user.NewHandler(userService)
 
 	mux := http.NewServeMux()

@@ -3,26 +3,29 @@ package auth
 import (
 	"encoding/json"
 	"net/http"
+	"real-time-chat/internal/utils"
 )
 
 type Handler struct {
 	authService *AuthService
+	validator   *utils.Validator
 }
 
-func NewHandler(authService *AuthService) *Handler {
+func NewHandler(authService *AuthService, validator *utils.Validator) *Handler {
 	return &Handler{
 		authService: authService,
+		validator:   validator,
 	}
 }
 
 type RegisterRequest struct {
-	Email    string `json:"email"`
-	Username string `json:"username"`
-	Password string `json:"password"`
+	Email    string `json:"email" validate:"required,email"`
+	Username string `json:"username" validate:"required,min=3,max=30"`
+	Password string `json:"password" validate:"required,min=8"`
 }
 
 type LoginRequest struct {
-	Email    string `json:"email"`
+	Email    string `json:"email" validate:"required,email"`
 	Password string `json:"password"`
 }
 
@@ -39,6 +42,15 @@ func (h *Handler) Register(w http.ResponseWriter, r *http.Request) {
 		http.Error(
 			w,
 			"invalid request body",
+			http.StatusBadRequest,
+		)
+		return
+	}
+
+	if err := h.validator.Struct(request); err != nil {
+		http.Error(
+			w,
+			"invalid request data",
 			http.StatusBadRequest,
 		)
 		return
@@ -82,6 +94,15 @@ func (h *Handler) Login(w http.ResponseWriter, r *http.Request) {
 		http.Error(
 			w,
 			"invalid request body",
+			http.StatusBadRequest,
+		)
+		return
+	}
+
+	if err := h.validator.Struct(request); err != nil {
+		http.Error(
+			w,
+			"invalid request data",
 			http.StatusBadRequest,
 		)
 		return
